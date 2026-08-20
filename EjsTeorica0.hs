@@ -55,4 +55,6 @@ quitar e (x:xs) = if e == x then xs else e : quitar e xs
 vacio1 :: Dict k v
 vacio1 = CDict Nil--}
 
-subsecuencias
+{--subsecuencias :: [a] -> [[a]]
+subsecuencias [x] = [x]
+subsecuencias (x:xs) = [x] : subsecuencias xs : --}

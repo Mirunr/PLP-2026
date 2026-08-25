@@ -99,4 +99,30 @@ listasFinitasDePositivos = concat[listasQueSuman n | n <-[1..]]
 --a) Una función que dada una lista de palabras devuelve una lista con aquellas que tienen menos de 5 letras.
 
 menosDe5 :: [String] -> [String]
-menosDe5 = filter ((flip(<))5).length
+menosDe5 = filter (((flip (<)) 5).length)
+
+--b) Una función que dada una lista de notas devuelve una lista de booleanos que indiquen si la nota está aprobada (es mayor a 6)
+
+aprobados :: [Int] -> [Bool]
+aprobados = map ((flip (>)) 6)
+
+--c) Una función que dada una lista de números devuelve una lista que contiene solo los números pares elevados al cuadrado.
+
+soloParesAlCuadrado ::Integral a => [a] -> [a] 
+soloParesAlCuadrado l = map ((flip(^))2) soloPares
+                    where soloPares = filter (((==)0).(flip mod) 2) l
+
+--RECORDAR BIEN COMO FUNCIONA MOD: mod 2 4 = 2; mod 3 4 = 3; es decir, con mod x y estoy calculando el resto de calcular x / y
+
+-- ii. Redefinir usando foldr las funciones sum, elem, (++), filter y map.
+
+sum1 :: Num a => [a] -> a 
+sum1 = foldr (+) 0 
+
+elem1 :: Eq a => a -> [a] -> Bool
+elem1 x = foldr ((||).((==)x)) False
+
+masmas :: [a] -> [a] -> [a]
+masmas = (\l1 l2 -> foldr (:) l2 l1)
+
+filter1 :: (a -> Bool) -> 

@@ -125,4 +125,57 @@ elem1 x = foldr ((||).((==)x)) False
 masmas :: [a] -> [a] -> [a]
 masmas = (\l1 l2 -> foldr (:) l2 l1)
 
-filter1 :: (a -> Bool) -> 
+filter1 :: (a -> Bool) -> [a] -> [a]
+filter1 f = foldr (\x acum -> if f x then x:acum else acum) [] 
+
+map1 :: (a -> b) -> [a] -> [b]
+map1 f = foldr (\x acum -> f x : acum) []
+
+{--iii. Definir la función 
+mejorSegún :: (a-> a-> Bool)-> [a]-> a, que devuelve 
+el máximo elemento de la lista según una función de 
+comparación, utilizando foldr1. Por ejemplo, maximum = mejorSegún (>).--}
+
+mejorSegún :: (a-> a-> Bool)-> [a]-> a
+mejorSegún f = foldr1 (\x y -> if f x y then x else y)  
+
+{--iv. Definir la función sumasParciales :: Num a => [a]-> [a], que dada una lista de números devuelve otra de la misma longitud, que tiene
+en cada posición la suma parcial de los elementos de la lista original desde la cabeza hasta la posición actual. 
+Por ejemplo, sumasParciales [1,4,-1,0,5] [1,5,4,4,9].--}
+
+
+--Primero me salió con una función auxiliar que usa una lista por comprensión 
+listasParciales :: [a] -> [[a]]
+listasParciales l = [take x l | x <-[1..length(l)]]
+
+sumasParciales :: Num a => [a] -> [a]
+sumasParciales = (\l -> map sum (listasParciales l))
+
+--Después finalmente logré hacerlo con foldl
+
+sumasParciales1 :: Num a => [a] -> [a]
+sumasParciales1 l = foldl (\r x -> if length r <= length l then r ++ [sum (take (length r+1) l)] else r) [] l
+
+--sumasParcialesSRE :: Num a => [a] -> [a]
+--sumasParcialesSRE  
+
+
+{--v. Definir la función sumaAlt, que realiza la suma alternada de los elementos de una lista. 
+Es decir, da como resultado: el primer elemento, menos el segundo, más el tercero, menos el cuarto, etc. Usar foldr.
+--}
+
+sumaAlt :: Num a => [a] -> a
+sumaAlt = foldr (-) 0
+
+{-- vi. Hacer lo mismo que en el punto anterior, pero en sentidoinverso (el último elemento menos el anteúltimo, etc.). 
+Pensar qué esquema de recursión conviene usar en este caso.--}
+
+sumaAlt1 :: Num a => [a] -> a
+sumaAlt1 = foldl (flip (-)) 0
+
+{-- vii. Definir la función componerTodas que, dada una lista de funciones, devuelve la composición de todas ellas. 
+Ejemplo: componerTodas [flip mod 2, (+1), (*3)] 0 1--}
+
+componerTodas :: [(a -> a)] -> a -> a
+componerTodas = foldr (.) id
+ 

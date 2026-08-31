@@ -179,3 +179,146 @@ Ejemplo: componerTodas [flip mod 2, (+1), (*3)] 0 1--}
 componerTodas :: [(a -> a)] -> a -> a
 componerTodas = foldr (.) id
  
+{-- Ejercicio 9
+i. Definir la función permutaciones :: [a]-> [[a]], que dada una lista devuelve todas sus permutaciones. Se recomienda 
+utilizar concatMap :: (a-> [b])-> [a]-> [b], y también take y drop.--}
+
+permutaciones :: Eq a => [a] -> [[a]]
+permutaciones [] = [[]]
+permutaciones l = concat [map ((:)x) (permutaciones (filter (/= x) l)) | x <- l]
+
+
+{-- QUIERO INTENTAR USAR EL concatMap 
+
+permus :: Eq a => [a] -> [[a]]
+permus l = concatMap 
+
+concatMapPermus :: Eq a => [a] -> [[a]]
+concatMapPermus l = concatMap (\x -> (:)x) listaOriginal 
+                    where listaOriginal = (filter (/= x) l)
+
+
+concatMap :: Foldable t => (a -> [b]) -> t a -> [b]
+
+ejemplo: 
+
+concatMap (\x -> [x,x]) [1,2,3] = [1,1,2,2,3,3]
+
+--}
+
+{-- ii. Definir la función partes, que recibe una lista L y devuelve la lista de todas las listas 
+formadas por los mismos elementos de L, en su mismo orden de aparición.
+
+Antes de pensarlo sin recursión explicita voy a probar primero de intentar hacerlo con, y desps de ahi pasar a lo
+otro
+--}
+
+partesExpl :: [a] -> [[a]]
+partesExpl [] = [[]]
+partesExpl (x:xs) = map ((:)x) (partesExpl xs) ++ partesExpl xs
+
+--funciona sin repetidos, debería considerar el caso en el que hayan repetidos?  
+
+partes :: [a] -> [[a]]
+partes = foldr (\x rec -> rec ++ map ((:)x) rec) [[]] 
+
+{--¡¡¡¡¡¡¡¡EN NINGUNO DE ESTOS EJERCICIOS USÉ TAKE NI DROP, QUEDA PENDIENTE REPENSARLOS USANDO ESAS
+FUNCIONES!!!!--}
+
+{-- iii. Definir la función prefijos, que dada una lista, devuelve todos sus prefijos.--}
+
+prefijosINF :: [a] -> [[a]]
+prefijosINF l = [take n l| n <-[0..length(l)]]
+
+prefijosExpl :: [a] -> [[a]]
+prefijosExpl [] = []
+prefijosExpl (x:xs) = [x] : map ((:)x) (prefijosExpl xs)
+
+prefijos :: [a] -> [[a]]
+prefijos = foldr (\x rec -> [x] : map ((:) x) rec) []
+
+{-- iv. Sublistas:
+Definir la función sublistas que, dada una lista, devuelve 
+todas sus sublistas (listas de elementos que aparecen consecutivos en la lista original)--}
+
+sublistasExpl :: [a] -> [[a]]
+sublistasExpl [] = [[]]
+sublistasExpl (x:xs) = prefijos (x:xs) ++ sublistasExpl xs
+
+--sublistas :: [a] -> [[a]]
+--sublistas l = foldr (\x rec -> prefijos rec) [[]] l
+
+
+{--
+Ejercicio 10
+
+a. Definir la función sacarUna :: Eq a => a-> [a]-> [a], que dados un elemento y una lista devuelve el resultado de eliminar de la lista la primera aparición del elemento (si está presente).
+--}
+
+recr :: (a-> [a]-> b-> b)-> b-> [a]-> b 
+recr _ z [] = z 
+recr f z (x : xs) = f x xs (recr f z xs)
+
+sacarUna :: Eq a => a -> [a] -> [a]
+sacarUna n = recr (\x xs rec -> if x == n then xs else x:rec) []
+
+{--
+b. Explicar por qué el esquema de recursión estructural (foldr) no es adecuado para implementar la función sacarUna del punto anterior.
+
+Porque foldr sigue recorriendo y sacando apariciones de la lista completa, no puede cortar antes porq no tiene acceso a la subestructura de la lista
+como para frenar y devolver esa parte una vez hecha la primera eliminación
+--}
+
+{--c. Definir la función insertarOrdenado :: Ord a => a-> [a]-> [a] que inserta un elemento en una lista ordenada (de manera creciente), de manera que se preserva el ordenamiento.--}
+
+
+insertarOrdenado :: Ord a => a -> [a] -> [a]
+insertarOrdenado n = recr (\x xs rec -> if n < x then n:x:xs else x:rec) [n]
+
+
+{--
+Ejercicio 11
+
+Indicar qué tipo de recursión se utiliza en cada una de las siguientes definiciones. Para los esquemas estructural y primitivo reescribir utilizando recr y foldr
+
+elementosEnPosicionesPares :: [a]-> [a] 
+elementosEnPosicionesPares [] = [] 
+elementosEnPosicionesPares (x:xs) = if null xs then [x] else x : elementosEnPosicionesPares (tail xs)
+
+En la función elementosEnPosicionesPares se está usando la recursión global, ya que se hace uso de una llamada recursiva con la cola de la cola.
+
+entrelazar :: [a]-> [a]-> [a] 
+entrelazar [] = id 
+entrelazar (x:xs) = \ys-> if null ys then x : entrelazar xs [] else x : head ys : entrelazar xs (tail ys)
+
+
+slowSort :: Ord a => [a]-> [a] 
+slowSort [] = [] 
+slowSort (p:xs) = slowSort menores ++ [p] ++ slowSort mayores 
+                   where menores = [x | x <- xs, x <= p] 
+                         mayores = [x | x <- xs, x > p]
+
+En este caso también se hace una llamada recursiva de la función sobre una sublista de la lista, lo cual rompe la estructura de la recursión estructural, y también 
+la recursión primitiva al no usar como alternativa simplemente la cola de la lista para parar la recursión???
+
+sufijos :: [a]-> [[a]] 
+sufijos [] = [[]] 
+sufijos (x:xs) = (x:xs) : sufijos xs
+
+esto es recursión primitiva pq se requiere acceso además de al primer elemento de la lista y la recursión sobre la cola, 
+tengo q tener el primer elemento y la cola
+
+
+miScanr :: (a-> b-> b)-> b-> [a]-> [b] 
+miScanr f n [] = [n] 
+miScanr f n (x:xs) = let (y:ys) = miScanr f n xs 
+                     in (f x y) : (y:ys)
+
+
+Esto no es recursión estructural ya que la función que se usa trabaja con el primer elemento de la cola y el primer elemento resultante de 
+la llamada recursiva con la cola
+
+--}
+
+
+

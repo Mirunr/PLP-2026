@@ -110,7 +110,6 @@ tienenLaMismaEstructura = undefined -- TODO: COMPLETAR
 -- 10: subCircuitoMásResistente
 
 subCircuitoMásResistente = undefined -- TODO: COMPLETAR
-
 {-- 11: Demostrar: alternado . alternado = id
 
 alternado :: Circuito -> Circuito
@@ -133,6 +132,152 @@ not :: Bool -> Bool
 {NT} not True = False
 {NF} not False = True
 
--- TODO: COMPLETAR
+------
 
+Demostrar paratodo Circuito:
+
+Sea el predicado unario paratodo x :: Circuito 
+       P(x) == alternado . alternado = id            # definimos esto como P(x) pero no se usa x tdvia, no habria q usar la ext primero tal vez?
+
+Por extensionalidad funcional, basta ver:        
+       paratodo x:: Circuito. 
+              (alternado . alternado) x = id x
+
+Entonces por Induccion Estructural sobre Circuito, se tiene que cumplir que:                                          
+       paratodo a:: Caja.                                                                                              
+              P(Caja a)
+       paratodo c1:: Circuito. paratodo c2 :: Circuito. 
+              P(c1) ^ P(c2) --> P(Serie c1 c2)                 --Sea P(c1) ^ P(c2) HI. Sea P(Serie c1 c2) TI
+       paratodo c1:: Circuito. paratodo c2 :: Circuito. paratodo a1:: Caja. paratodo a2 :: Caja. 
+              P(c1) ^ P(c2) --> P(Paralelo a1 c1 c2 a2)        --Sea P(c1) ^ P(c2) HI. Sea P(Paralelo a1 c1 c2 a2) TI
+
+
+---------------
+-  CASO BASE  -
+---------------
+paratodo a:: Caja. P(Caja a)
+
+(alternado . alternado) Caja a = id Caja a
+       Sea IZQ = (alternado . alternado) Caja a 
+       Sea DER = id Caja a
+
+IZQ : {C}  = alternado (alternado Caja a)
+      {AC} = alternado (Caja (cajaAlternada a))
+      {AC} = Caja (cajaAlternada (cajaAlternada a))
+
+Por lema de generación sobre Caja, sabemos que, paratodo bool :: Bool
+       a = Bombilla bool o bien a = Nada
+
+Entonces paratodo a:: Caja, probemos cada caso en particular
+
+       * Sea a = Nada, 
+              IZQ   = Caja (cajaAlternada (cajaAlternada Nada))
+              {CAN} = Caja (cajaAlternada(Nada))
+              {CAN} = Caja Nada
+
+       Vemos el lado Derecho
+              DER = id Caja Nada
+              {I} = Caja Nada
+
+       Sea IZQ = DER queda probado el CASO BASE cuando a:: Caja, sea a = Nada
+
+       * Sea a = Bombilla bool
+              IZQ   = Caja (cajaAlternada (cajaAlternada Bombilla bool))
+              {CAB} = Caja (cajaAlternada (Bombilla not bool))
+              {CAB} = Caja (Bombilla not (not bool))
+
+              Por lema de generación de booleanos, bool puede:                      # será que podemos usar q la propiedad ya está probada sobre booleanos en la teórica 
+                     bool = True                                                    # que dice que not(not x) = x  ??
+                     bool = False                                                   # también pienso, como esto es literal algo q aparece en la teórica,
+                                                                                    # no será que hay q plantear en un apartado q probamos que not (not x) = x por inducción sobre booleanos
+                     * Sea bool = True                                              # y entonces Caja (Bombilla not (not bool)) = Caja Bombilla bool
+                            IZQ  = Caja (Bombilla not (not True))
+                            {NT} = Caja (Bombilla not (False))
+                            {NF} = Caja (Bombilla True)
+
+                     Vemos el lado Derecho
+                            DER = id Caja (Bombilla True)
+                            {I} = Caja (Bombilla True)
+
+                     Sea IZQ = DER queda probado el CASO BASE cuando a:: Caja, sea a = Bombilla True
+
+                     * Sea bool = False
+                            IZQ  = Caja (Bombilla not (not False))
+                            {NF} = Caja (Bombilla not (True))
+                            {NT} = Caja (Bombilla False)
+
+                     Vemos el lado Derecho
+                            DER = id Caja (Bombilla False)
+                            {I} = Caja (Bombilla False)
+
+                     Sea IZQ = DER queda probado el CASO BASE cuando a:: Caja, sea a = Bombilla False
+
+Queda entonces demostrado el CASO BASE
+
+
+--------------------
+-  CASO INDUCTIVO  -
+--------------------
+* paratodo c1:: Circuito. paratodo c2 :: Circuito. 
+              P(c1) ^ P(c2) --> P(Serie c1 c2)
+
+       P(c1) = (alternado . alternado) c1 = id c1
+       P(c2) = (alternado . alternado) c2 = id c2
+
+       (alternado . alternado) (Serie c1 c2) = id (Serie c1 c2)
+              Sea IZQ = (alternado . alternado) (Serie c1 c2)
+              Sea DER = id (Serie c1 c2)
+
+       DER :  {I} Serie c1 c2
+
+       IZQ :  {C}  = alternado (alternado (Serie c1 c2))
+              {AS} = alternado (Serie (alternado c1) (alternado c2))
+              {AS} = Serie (alternado (alternado c1) alternado (alternado c2))
+              {C}  = Serie ((alternado . alternado) c1) (alternado (alternado c2))
+              {C}  = Serie ((alternado . alternado) c1) ((alternado . alternado) c2)              # acá no habría q reemplazar por id c1 y id c2 
+                                                                                                  # y después hacer {I} y pasar a ci y cd
+       Entonces por HI : paratodo c1:: Circuito. paratodo c2 :: Circuito. 
+                                   P(c1) ^ P(c2) --> P(Serie c1 c2)
+
+       Vemos que vale P(c1) ^ P(c2) entonces:
+
+       Se cumple por TI que paratodo c1:: Circuito. paratodo c2 :: Circuito. 
+                                   P(Serie c1 c2)
+
+Sea IZQ = DER queda probado el CASO INDUCTIVO cuando P(Serie c1 c2)
+
+* paratodo c1:: Circuito. paratodo c2 :: Circuito. paratodo a1:: Caja. paratodo a2 :: Caja. 
+              P(c1) ^ P(c2) --> P(Paralelo a1 c1 c2 a2)
+
+       P(c1) = (alternado . alternado) c1 = id c1
+       P(c2) = (alternado . alternado) c2 = id c2
+
+       (alternado . alternado) (Paralelo a1 c1 c2 a2) = id (Paralelo a1 c1 c2 a2)
+              Sea IZQ = (alternado . alternado) (Paralelo a1 c1 c2 a2)
+              Sea DER = id (Paralelo a1 c1 c2 a2)
+       
+       DER :  {I} Paralelo a1 c1 c2 a2
+
+       IZQ :  {C}  = alternado (alternado (Paralelo a1 c1 c2 a2))
+              {AP} = alternado (Paralelo (cajaAlternada a1) (alternado c1) (alternado c2) (cajaAlternada a2))
+              {AP} = Paralelo (cajaAlternada(cajaAlternada a1)) (alternado (alternado c1)) (alternado (alternado c2)) (cajaAlternada(cajaAlternada a2))
+              {C}  = Paralelo ((cajaAlternada . cajaAlternada) a1) (alternado (alternado c1)) (alternado (alternado c2)) (cajaAlternada(cajaAlternada a2))
+              {C}  = Paralelo ((cajaAlternada . cajaAlternada) a1) ((alternado . alternado) c1) (alternado (alternado c2)) (cajaAlternada(cajaAlternada a2))
+              {C}  = Paralelo ((cajaAlternada . cajaAlternada) a1) ((alternado . alternado) c1) ((alternado . alternado) c2) (cajaAlternada(cajaAlternada a2))
+              {C}  = Paralelo ((cajaAlternada . cajaAlternada) a1) ((alternado . alternado) c1) ((alternado . alternado) c2) ((cajaAlternada . cajaAlternada) a2) #no hay q hacer nada
+                                                                                                                                                                 #con el calt.calt a1?
+       Entonces por HI : paratodo c1:: Circuito. paratodo c2 :: Circuito.                                                                                                      
+                                   P(c1) ^ P(c2) --> P(Paralelo a1 c1 c2 a2)
+
+       Vemos que vale P(c1) ^ P(c2) entonces:
+
+       Se cumple por TI que paratodo c1:: Circuito. paratodo c2 :: Circuito. 
+                                   P(Serie c1 c2)
+
+Sea IZQ = DER queda probado el CASO INDUCTIVO cuando P(Paralelo a1 c1 c2 a2)
+
+Queda demostrado entonces paratodo x:: Circuito 
+       P(x) == alternado . alternado = id
+
+       
 --}
